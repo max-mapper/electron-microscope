@@ -20,6 +20,9 @@ var uuid = require('hat')
 
 var microscope = require('./index.js')
 
+App.commandLine.appendSwitch('v', -1)
+App.commandLine.appendSwitch('vmodule', 'console=0')
+
 App.on('ready', load)
 
 function load () {
