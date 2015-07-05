@@ -1,7 +1,6 @@
 {
   "name": "electron-microscope",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "bin": {
     "electron-microscope": "cli.js"
@@ -9,6 +8,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "hat": "0.0.3"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxogden/electron-microscope.git"
+  },
   "author": "",
-  "license": "BSD"
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/maxogden/electron-microscope/issues"
+  },
+  "homepage": "https://github.com/maxogden/electron-microscope#readme",
+  "description": ""
 }
