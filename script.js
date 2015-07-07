@@ -1,1 +1,4 @@
-console.log('yo dog')
+function (resp, send, done) {
+  send(document.querySelector('#ctl00_lblTitle').innerText)
+  done()
+}

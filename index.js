@@ -29,10 +29,10 @@ function scrape (BrowserWindow, pageUrl, cb) {
   win.webContents.once('did-get-response-details', function (event, status, newUrl, originalUrl, respCode, method, referrer, headers) {
     responseDetails = {
       status: status,
-      newUrl: newUrl,
+      url: newUrl,
       originalUrl: originalUrl,
-      httpResponseCode: respCode,
-      requestMethod: method,
+      statusCode: respCode,
+      method: method,
       referrer: referrer,
       headers: headers
     }
