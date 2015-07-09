@@ -6,10 +6,12 @@
     "electron-microscope": "cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bundle": "browserify socket-client.js -o socket-client-bundle.js"
   },
   "dependencies": {
-    "hat": "0.0.3"
+    "getport": "^0.1.0",
+    "hat": "0.0.3",
+    "websocket-stream": "^1.5.0"
   },
   "devDependencies": {},
   "repository": {

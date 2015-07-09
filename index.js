@@ -1,19 +1,50 @@
-var uuid = require('hat')
+var fs = require('fs')
 var path = require('path')
+var http = require('http')
+var events = require('events')
+var websocket = require('websocket-stream')
+var getport = require('getport')
+var uuid = require('hat')
 var BrowserWindow = require('browser-window')
-var ipc = require('ipc')
+
+var clientBundle = fs.readFileSync('./socket-client-bundle.js').toString()
 
 module.exports = Microscope
 
-function Microscope (opts) {
-  if (!(this instanceof Microscope)) return new Microscope(opts)
+function Microscope (opts, ready) {
+  if (!(this instanceof Microscope)) return new Microscope(opts, ready)
+  var self = this
+    
+  this.http = http.createServer()
+  this.emitter = new events.EventEmitter()
+  this.websocket = websocket.createServer({server: this.http}, function (socket) {
+    self.activeSocket = socket
+    socket.on('data', function (d) {
+      var data
+      try {
+        data = JSON.parse(d)
+      } catch (e) {
+        data = {}
+      }
+      console.log('server got', data)
+      if (!data.id) return console.error('invalid message ' + d)
+      if (data.ready) return self.emitter.emit(data.id + '-ready')
+      else if (data.done) return self.emitter.emit(data.id + '-done')
+      else self.emitter.emit(data.id + '-message')
+    })
+  })
+  
+  getport(function (e, p) {
+    if (e) return ready(e)
+    self.httpPort = p
+    self.http.listen(p, ready)
+  })
 
   this.window = new BrowserWindow({
     "web-preferences": {
       "web-security": true
     },
     "node-integration": false,
-    preload: path.resolve(path.join(__dirname, 'preload.js')),
     show: true
   })
 
@@ -83,34 +114,27 @@ Microscope.prototype.eval = function (script, cb) {
   }, limit)
   
   // when our rpc code has executed it will call this
-  ipc.on(id + '-ready', function () {
+  self.emitter.on(id + '-ready', function () {
     if (timedOut) return
     gotReady = true
-    self.window.webContents.send('response', true)
+    self.activeSocket.write(JSON.stringify({id: id, script: script}))
   })
-  
-  ipc.on(id + '-message', function (ev, data) {
+
+  self.emitter.on(id + '-message', function (ev, data) {
     if (timedOut) return
     console.log(JSON.stringify(data))
   })
-  
+
   // user code is done, we can dispose of window
-  ipc.on(id + '-done', function () {
+  self.emitter.on(id + '-done', function () {
     if (timedOut) return
     cb()
   })
-  
-  // run our rpc code on page (not synchronous)
-  self.window.webContents.executeJavaScript(wrapRPC(script))
 
-  function wrapRPC (fn) {
-    return ";(function() {\n"
-      + "  function __ELECTRON_IPC_SEND (msg) { ELECTRON_IPC.send('" + id + "-message', msg) };\n"
-      + "  function __ELECTRON_IPC_DONE (msg) { ELECTRON_IPC.send('" + id + "-done', true, msg) };\n"
-      + "  ELECTRON_IPC.on('response', function () {"
-      + '    (' + fn + ")(__ELECTRON_IPC_SEND, __ELECTRON_IPC_DONE)"
-      + "  });"
-      + "  ELECTRON_IPC.send('" + id + "-ready', true);"
-      + "})();\n"
-  }
+  // run our rpc code on page
+  var clientScript = clientBundle
+    .replace('[[REPLACE-WITH-SERVER]]', 'ws://localhost:' + self.httpPort)
+    .replace('[[REPLACE-WITH-ID]]', id)
+  
+  self.window.webContents.executeJavaScript(clientScript)
 }

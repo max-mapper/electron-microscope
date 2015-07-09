@@ -10,7 +10,7 @@ if (!url || !scriptPath) {
   process.exit(1)
 }
 
-var script = fs.readFileSync(scriptPath)
+var script = fs.readFileSync(scriptPath).toString()
   
 var App = require('app')
 
@@ -19,12 +19,15 @@ var microscope = require('./index.js')
 App.on('ready', load)
 
 function load () {
-  var scope = microscope()
-  scope.window.loadUrl(url)
-  scope.domReady(function (err, resp) {
-    scope.eval(script, function (err) {
-      if (err) console.error(err)
-      scope.window.close()
+  var scope = microscope({}, function ready (err) {
+    if (err) throw err
+    scope.window.loadUrl(url)
+    scope.domReady(function (err, resp) {
+      console.log('DOM READY')
+      scope.eval(script, function (err) {
+        if (err) console.error(err)
+        scope.window.close()
+      })
     })
   })
 }

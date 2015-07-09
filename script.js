@@ -1,4 +1,3 @@
-function scraper (send, done) {
-  send(document.querySelector('#ctl00_lblTitle').innerText)
-  done()
+function scraper () {
+  console.log([send, done, 'hi'])
 }
