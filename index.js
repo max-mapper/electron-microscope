@@ -26,11 +26,14 @@ function Microscope (opts, ready) {
       } catch (e) {
         data = {}
       }
-      console.log('server got', data)
       if (!data.id) return console.error('invalid message ' + d)
-      if (data.ready) return self.emitter.emit(data.id + '-ready')
-      else if (data.done) return self.emitter.emit(data.id + '-done')
-      else self.emitter.emit(data.id + '-message')
+      if (data.ready) {
+        return self.emitter.emit(data.id + '-ready')
+      } else if (data.done) {
+        return self.emitter.emit(data.id + '-done')
+      } else {
+        self.emitter.emit(data.id + '-message', data.message)
+      }
     })
   })
   
@@ -120,7 +123,7 @@ Microscope.prototype.eval = function (script, cb) {
     self.activeSocket.write(JSON.stringify({id: id, script: script}))
   })
 
-  self.emitter.on(id + '-message', function (ev, data) {
+  self.emitter.on(id + '-message', function (data) {
     if (timedOut) return
     console.log(JSON.stringify(data))
   })

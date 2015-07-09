@@ -19,8 +19,7 @@ ws.on('data', function (d) {
 function runUserScript (code) {
   function send (msg) { ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, message: msg})) }
   function done () { ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, done: true})) }
-  var _eval = eval
-  _eval('(' + code + ')()')
+  eval('(' + code + ')(send, done)')
 }
 
 ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, ready: true}))

@@ -23,7 +23,6 @@ function load () {
     if (err) throw err
     scope.window.loadUrl(url)
     scope.domReady(function (err, resp) {
-      console.log('DOM READY')
       scope.eval(script, function (err) {
         if (err) console.error(err)
         scope.window.close()
