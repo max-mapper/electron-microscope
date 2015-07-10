@@ -4,11 +4,11 @@ var microscope = require('./index.js')
 App.on('ready', load)
 
 function load () {
-  var scope = microscope()
+  var scope = microscope({}, function ready (err) {
+    scope.window.loadUrl('http://hoytarboretum.gardenexplorer.org/taxalist.aspx')
   
-  scope.window.loadUrl('http://hoytarboretum.gardenexplorer.org/taxalist.aspx')
-  
-  loop()
+    loop()
+  })  
   
   function loop () {
     scope.domReady(function (err, resp) {
@@ -40,12 +40,12 @@ function load () {
   function clickNextLetter(send, done) {
     var links = document.querySelectorAll('.content input[type="button"]')
     var lastClicked = localStorage.getItem('last-clicked')
-    if (!lastClicked) lastClicked = 0
+    if (typeof lastClicked === 'undefined') lastClicked = 0
+    else lastClicked = +lastClicked
     var link = links[lastClicked]
     if (!link) return done({clickedAll: true})
     localStorage.setItem('last-clicked', ++lastClicked)
     link.click()
-    links[0].click()
     done()
   }
 }

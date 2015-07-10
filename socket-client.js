@@ -3,7 +3,6 @@ var ws = websocket('[[REPLACE-WITH-SERVER]]')
 var ELECTRON_MICROSCOPE_UNIQUE_ID = '[[REPLACE-WITH-ID]]'
 
 ws.on('data', function (d) {
-  console.log('in client', d.toString())
   var data
   try {
     data = JSON.parse(d)

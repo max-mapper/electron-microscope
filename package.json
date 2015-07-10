@@ -6,7 +6,8 @@
     "electron-microscope": "cli.js"
   },
   "scripts": {
-    "bundle": "browserify socket-client.js -o socket-client-bundle.js"
+    "bundle": "browserify socket-client.js -o socket-client-bundle.js",
+    "rmcache": "rm ~/Library/Application Support/Electron/Local Storage/*"
   },
   "dependencies": {
     "getport": "^0.1.0",
