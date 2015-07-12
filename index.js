@@ -5,7 +5,12 @@ var events = require('events')
 var websocket = require('websocket-stream')
 var getport = require('getport')
 var uuid = require('hat')
+var ndjson = require('ndjson')
+var pump = require('pump')
+var duplex = require('duplexify')
+var through = require('through2')
 var BrowserWindow = require('browser-window')
+var debug = require('debug')('electron-microscope')
 
 var clientBundle = fs.readFileSync('./socket-client-bundle.js').toString()
 
@@ -13,28 +18,35 @@ module.exports = Microscope
 
 function Microscope (opts, ready) {
   if (!(this instanceof Microscope)) return new Microscope(opts, ready)
+  if (typeof opts === 'function') {
+    ready = opts
+    opts = undefined
+  }
   var self = this
     
   this.http = http.createServer()
   this.emitter = new events.EventEmitter()
   this.websocket = websocket.createServer({server: this.http}, function (socket) {
-    self.activeSocket = socket
-    socket.on('data', function (d) {
-      var data
-      try {
-        data = JSON.parse(d)
-      } catch (e) {
-        data = {}
+    self.activeSocket = ndjson.serialize()
+    pump(self.activeSocket, socket)
+    var handlerStream = through.obj(function(data, enc, next) {
+      debug('client message', data)
+      if (!data.id) {
+        console.error('invalid message ' + d)
+        return next()
       }
-      if (!data.id) return console.error('invalid message ' + d)
       if (data.ready) {
-        return self.emitter.emit(data.id + '-ready')
+        self.emitter.emit(data.id + '-ready')
+        return next()
       } else if (data.done) {
-        return self.emitter.emit(data.id + '-done')
+        self.emitter.emit(data.id + '-done')
+        return next()
       } else {
         self.emitter.emit(data.id + '-message', data.message)
+        return next()
       }
     })
+    pump(socket, ndjson.parse(), handlerStream)
   })
   
   getport(function (e, p) {
@@ -52,7 +64,17 @@ function Microscope (opts, ready) {
   })
 
   this.opts = opts || {}
-  this.opts.limit = this.opts.limit || 10000
+  this.opts.limit = this.opts.limit || 100000
+}
+
+Microscope.prototype.load = function (url, opts, cb) {
+  var self = this
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = undefined
+  }
+  this.window.loadUrl(url, opts)
+  if (cb) this.domReady(cb)
 }
 
 Microscope.prototype.domReady = function (cb) {
@@ -120,7 +142,7 @@ Microscope.prototype.eval = function (script, cb) {
   self.emitter.on(id + '-ready', function () {
     if (timedOut) return
     gotReady = true
-    self.activeSocket.write(JSON.stringify({id: id, script: script}))
+    self.activeSocket.write({id: id, script: script})
   })
 
   self.emitter.on(id + '-message', function (data) {
@@ -129,7 +151,8 @@ Microscope.prototype.eval = function (script, cb) {
   })
 
   // user code is done, we can dispose of window
-  self.emitter.on(id + '-done', function () {
+  self.emitter.on(id + '-done', function (err) {
+    if (err) return cb(err)
     if (timedOut) return
     cb()
   })

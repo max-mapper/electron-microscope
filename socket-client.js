@@ -1,24 +1,42 @@
 var websocket = require('websocket-stream')
-var ws = websocket('[[REPLACE-WITH-SERVER]]')
-var ELECTRON_MICROSCOPE_UNIQUE_ID = '[[REPLACE-WITH-ID]]'
+var through = require('through2')
+var ndjson = require('ndjson')
+var pump = require('pump')
+var duplex = require('duplexify')
 
-ws.on('data', function (d) {
-  var data
-  try {
-    data = JSON.parse(d)
-  } catch (e) {
-    data = {}
+var socket = websocket('[[REPLACE-WITH-SERVER]]')
+var ELECTRON_MICROSCOPE_UNIQUE_ID = '[[REPLACE-WITH-ID]]'
+var alreadyRunningScript = false
+
+var wrapperStream = through.obj(function (obj, enc, cb) {
+  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, message: obj})
+  cb()
+}, function done (cb) {
+  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, done: true})
+  cb()
+})
+
+var unwrapperStream = through.obj(function (data, enc, next) {
+  if (!data.id) return next(new Error('invalid message ' + d))
+  if (data.id !== ELECTRON_MICROSCOPE_UNIQUE_ID) return next(new Error('ID mismatch: ' +  data.id + ', ' + ELECTRON_MICROSCOPE_UNIQUE_ID))
+  if (data.script) {
+    if (alreadyRunningScript) return next(new Error('cannot run multiple scripts in the same eval call'))
+    alreadyRunningScript = true
+    eval('(' + data.script + ')(wrapperStream)')
+    return next()
   }
-  if (!data.id) return console.error('invalid message ' + d)
-  if (data.id !== ELECTRON_MICROSCOPE_UNIQUE_ID) return console.error('ID mismatch', data.id, ELECTRON_MICROSCOPE_UNIQUE_ID)
-  if (data.script) return runUserScript(data.script)
   console.error('unknown message', d)
 })
 
-function runUserScript (code) {
-  function send (msg) { ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, message: msg})) }
-  function done () { ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, done: true})) }
-  eval('(' + code + ')(send, done)')
-}
+var serializer = ndjson.serialize()
+var parser =  ndjson.parse()
 
-ws.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, ready: true}))
+pump(wrapperStream, serializer, socket)
+pump(socket, parser, unwrapperStream)
+
+serializer.write({id: ELECTRON_MICROSCOPE_UNIQUE_ID, ready: true})
+
+// userStream.on('error', function (err) {
+//   socket.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, error: err.message}))
+//   socket.end()
+// })

@@ -1,4 +1,4 @@
-function scraper (send, done) {
-  send(document.querySelector('#ctl00_lblTitle').innerText)
-  done()
+function scraper (stream) {
+  stream.write(document.querySelector('#ctl00_lblTitle').innerText)
+  stream.end()
 }

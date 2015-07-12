@@ -19,10 +19,9 @@ var microscope = require('./index.js')
 App.on('ready', load)
 
 function load () {
-  var scope = microscope({}, function ready (err) {
+  var scope = microscope(function ready (err) {
     if (err) throw err
-    scope.window.loadUrl(url)
-    scope.domReady(function (err, resp) {
+    scope.load(url, function (err, resp) {
       scope.eval(script, function (err) {
         if (err) console.error(err)
         scope.window.close()
