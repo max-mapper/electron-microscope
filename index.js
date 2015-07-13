@@ -120,10 +120,14 @@ Microscope.prototype.eval = function (script) {
     if (timedOut) return
     stream.push(data)
   })
+  
+  self.bridge.on(id + '-error', function (err) {
+    if (timedOut) return
+    stream.destroy(err)
+  })
 
   // user code is done, we can dispose of window
-  self.bridge.on(id + '-finish', function (err) {
-    if (err) return stream.destroy(err)
+  self.bridge.on(id + '-finish', function () {
     if (timedOut) return
     stream.end()
   })

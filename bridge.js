@@ -25,6 +25,9 @@ module.exports = function (cb) {
       if (data.ready) {
         emitter.emit(data.id + '-ready')
         return next()
+      } else if (data.error) {
+        emitter.emit(data.id + '-error', data.error)
+        return next()
       } else if (data.finish) {
         emitter.emit(data.id + '-finish')
         return next()

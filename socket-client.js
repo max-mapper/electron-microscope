@@ -31,12 +31,12 @@ var unwrapperStream = through.obj(function (data, enc, next) {
 var serializer = ndjson.serialize()
 var parser =  ndjson.parse()
 
-pump(wrapperStream, serializer, socket)
+wrapperStream.pipe(serializer).pipe(socket)
 pump(socket, parser, unwrapperStream)
 
 serializer.write({id: ELECTRON_MICROSCOPE_UNIQUE_ID, ready: true})
 
-// userStream.on('error', function (err) {
-//   socket.write(JSON.stringify({id: ELECTRON_MICROSCOPE_UNIQUE_ID, error: err.message}))
-//   socket.end()
-// })
+wrapperStream.on('error', function (err) {
+  serializer.end({id: ELECTRON_MICROSCOPE_UNIQUE_ID, error: err.message})
+  socket.end()
+})

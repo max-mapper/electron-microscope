@@ -14,8 +14,11 @@ function load () {
       if (err) return exit(err)
       var data = scope.eval(clickNextLetter)
       data.on('data', function (d) {
-        if (d.clickedAll) return scope.window.close()
         console.log(JSON.stringify(d.data))
+      })
+      data.on('error', function (e) {
+        console.error("Error:", e)
+        scope.window.close()
       })
       data.on('finish', function () {
         scope.domReady(function (err) {

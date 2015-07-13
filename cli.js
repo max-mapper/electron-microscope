@@ -14,6 +14,7 @@ var script = fs.readFileSync(scriptPath).toString()
   
 var App = require('app')
 var microscope = require('./index.js')
+var ndjson = require('ndjson')
 
 App.on('ready', load)
 
@@ -22,8 +23,12 @@ function load () {
     if (err) throw err
     scope.load(url, function (err, resp) {
       var data = scope.eval(script)
-      data.pipe(process.stdout)
+      data.pipe(ndjson.serialize()).pipe(process.stdout)
       data.on('finish', function () {
+        scope.window.close()
+      })
+      data.on('error', function (e) {
+        console.error('Error!', e)
         scope.window.close()
       })
     })
