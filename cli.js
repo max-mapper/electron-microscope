@@ -13,7 +13,6 @@ if (!url || !scriptPath) {
 var script = fs.readFileSync(scriptPath).toString()
   
 var App = require('app')
-
 var microscope = require('./index.js')
 
 App.on('ready', load)
@@ -22,8 +21,9 @@ function load () {
   var scope = microscope(function ready (err) {
     if (err) throw err
     scope.load(url, function (err, resp) {
-      scope.eval(script, function (err) {
-        if (err) console.error(err)
+      var data = scope.eval(script)
+      data.pipe(process.stdout)
+      data.on('finish', function () {
         scope.window.close()
       })
     })

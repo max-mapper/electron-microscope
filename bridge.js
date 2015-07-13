@@ -25,11 +25,11 @@ module.exports = function (cb) {
       if (data.ready) {
         emitter.emit(data.id + '-ready')
         return next()
-      } else if (data.done) {
-        emitter.emit(data.id + '-done')
+      } else if (data.finish) {
+        emitter.emit(data.id + '-finish')
         return next()
       } else {
-        emitter.emit(data.id + '-message', data.message)
+        emitter.emit(data.id + '-data', data.data)
         return next()
       }
     })

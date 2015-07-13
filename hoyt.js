@@ -12,23 +12,32 @@ function load () {
   function loop () {
     scope.domReady(function (err) {
       if (err) return exit(err)
-      scope.eval(clickNextLetter, function (err, data) {
-        if (err) return exit(err)
-        if (data && data.clickedAll) return scope.window.close()
+      var data = scope.eval(clickNextLetter)
+      data.on('data', function (d) {
+        if (d.clickedAll) return scope.window.close()
+        console.log(JSON.stringify(d.data))
+      })
+      data.on('finish', function () {
         scope.domReady(function (err) {
           if (err) return exit(err)
-          scope.eval(function (stream) {
-            var species = document.querySelectorAll('.taxalist a b')
-            for (var i = 0; i < species.length; i++) stream.write(species[i].innerText)
-            stream.end()
-          }, function (err) {
-            if (err) return exit(err)
+          var data = scope.eval(getSpecies)
+          data.on('data', function (d) {
+            console.log(d)
+          })
+          data.on('finish', function () {
             scope.window.webContents.goBack()
             loop()
           })
         })
       })
     })
+  }
+  
+  // these two functions are executed on the page, .toString() is called on them!
+  function getSpecies (stream) {
+    var species = document.querySelectorAll('.taxalist a b')
+    for (var i = 0; i < species.length; i++) stream.write(species[i].innerText)
+    stream.end()
   }
   
   function clickNextLetter(stream) {

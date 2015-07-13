@@ -9,10 +9,10 @@ var ELECTRON_MICROSCOPE_UNIQUE_ID = '[[REPLACE-WITH-ID]]'
 var alreadyRunningScript = false
 
 var wrapperStream = through.obj(function (obj, enc, cb) {
-  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, message: obj})
+  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, data: obj})
   cb()
 }, function done (cb) {
-  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, done: true})
+  this.push({id: ELECTRON_MICROSCOPE_UNIQUE_ID, finish: true})
   cb()
 })
 

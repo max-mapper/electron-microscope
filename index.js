@@ -2,6 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var events = require('events')
 var uuid = require('hat')
+var through = require('through2')
 var BrowserWindow = require('browser-window')
 var debug = require('debug')('electron-microscope')
 var createBridge = require('./bridge.js')
@@ -83,7 +84,7 @@ Microscope.prototype.domReady = function (cb) {
   })
 }
 
-Microscope.prototype.eval = function (script, cb) {
+Microscope.prototype.eval = function (script) {
   var self = this
   
   if (typeof script === 'function') script = script.toString()
@@ -100,11 +101,12 @@ Microscope.prototype.eval = function (script, cb) {
   var limit = this.opts.limit
   var gotReady = false
   var timedOut = false
+  var stream = through.obj()
   
   var limitInterval = setTimeout(function () {
     if (gotReady) return
     timedOut = true
-    cb(new Error('Timed out'))
+    stream.destroy(new Error('Timed out'))
   }, limit)
   
   // when our rpc code has executed it will call this
@@ -114,16 +116,16 @@ Microscope.prototype.eval = function (script, cb) {
     self.bridge.activeSocket.write({id: id, script: script})
   })
 
-  self.bridge.on(id + '-message', function (data) {
+  self.bridge.on(id + '-data', function (data) {
     if (timedOut) return
-    console.log(JSON.stringify(data))
+    stream.push(data)
   })
 
   // user code is done, we can dispose of window
-  self.bridge.on(id + '-done', function (err) {
-    if (err) return cb(err)
+  self.bridge.on(id + '-finish', function (err) {
+    if (err) return stream.destroy(err)
     if (timedOut) return
-    cb()
+    stream.end()
   })
 
   // run our rpc code on page
@@ -132,4 +134,6 @@ Microscope.prototype.eval = function (script, cb) {
     .replace('[[REPLACE-WITH-ID]]', id)
   
   self.window.webContents.executeJavaScript(clientScript)
+    
+  return stream
 }
