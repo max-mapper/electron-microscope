@@ -10,6 +10,8 @@
     "rmcache": "rm ~/Library/Application\\ Support/Electron/Local\\ Storage/*"
   },
   "dependencies": {
+    "debug": "^2.2.0",
+    "debug-stream": "^2.0.2",
     "duplexify": "^3.4.2",
     "getport": "^0.1.0",
     "hat": "0.0.3",

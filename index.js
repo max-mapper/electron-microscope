@@ -1,16 +1,10 @@
 var fs = require('fs')
 var path = require('path')
-var http = require('http')
 var events = require('events')
-var websocket = require('websocket-stream')
-var getport = require('getport')
 var uuid = require('hat')
-var ndjson = require('ndjson')
-var pump = require('pump')
-var duplex = require('duplexify')
-var through = require('through2')
 var BrowserWindow = require('browser-window')
 var debug = require('debug')('electron-microscope')
+var createBridge = require('./bridge.js')
 
 var clientBundle = fs.readFileSync('./socket-client-bundle.js').toString()
 
@@ -23,37 +17,6 @@ function Microscope (opts, ready) {
     opts = undefined
   }
   var self = this
-    
-  this.http = http.createServer()
-  this.emitter = new events.EventEmitter()
-  this.websocket = websocket.createServer({server: this.http}, function (socket) {
-    self.activeSocket = ndjson.serialize()
-    pump(self.activeSocket, socket)
-    var handlerStream = through.obj(function(data, enc, next) {
-      debug('client message', data)
-      if (!data.id) {
-        console.error('invalid message ' + d)
-        return next()
-      }
-      if (data.ready) {
-        self.emitter.emit(data.id + '-ready')
-        return next()
-      } else if (data.done) {
-        self.emitter.emit(data.id + '-done')
-        return next()
-      } else {
-        self.emitter.emit(data.id + '-message', data.message)
-        return next()
-      }
-    })
-    pump(socket, ndjson.parse(), handlerStream)
-  })
-  
-  getport(function (e, p) {
-    if (e) return ready(e)
-    self.httpPort = p
-    self.http.listen(p, ready)
-  })
 
   this.window = new BrowserWindow({
     "web-preferences": {
@@ -65,6 +28,12 @@ function Microscope (opts, ready) {
 
   this.opts = opts || {}
   this.opts.limit = this.opts.limit || 100000
+  
+  createBridge(function (err, bridge) {
+    if (err) return ready(err)
+    self.bridge = bridge
+    ready()
+  })
 }
 
 Microscope.prototype.load = function (url, opts, cb) {
@@ -139,19 +108,19 @@ Microscope.prototype.eval = function (script, cb) {
   }, limit)
   
   // when our rpc code has executed it will call this
-  self.emitter.on(id + '-ready', function () {
+  self.bridge.on(id + '-ready', function () {
     if (timedOut) return
     gotReady = true
-    self.activeSocket.write({id: id, script: script})
+    self.bridge.activeSocket.write({id: id, script: script})
   })
 
-  self.emitter.on(id + '-message', function (data) {
+  self.bridge.on(id + '-message', function (data) {
     if (timedOut) return
     console.log(JSON.stringify(data))
   })
 
   // user code is done, we can dispose of window
-  self.emitter.on(id + '-done', function (err) {
+  self.bridge.on(id + '-done', function (err) {
     if (err) return cb(err)
     if (timedOut) return
     cb()
@@ -159,7 +128,7 @@ Microscope.prototype.eval = function (script, cb) {
 
   // run our rpc code on page
   var clientScript = clientBundle
-    .replace('[[REPLACE-WITH-SERVER]]', 'ws://localhost:' + self.httpPort)
+    .replace('[[REPLACE-WITH-SERVER]]', 'ws://localhost:' + self.bridge.httpPort)
     .replace('[[REPLACE-WITH-ID]]', id)
   
   self.window.webContents.executeJavaScript(clientScript)

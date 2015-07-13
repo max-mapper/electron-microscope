@@ -1,4 +1,4 @@
 function scraper (stream) {
-  stream.write(document.querySelector('#ctl00_lblTitle').innerText)
+  stream.write(document.querySelector('.content-title').innerText)
   stream.end()
 }
