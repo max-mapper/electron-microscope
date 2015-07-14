@@ -2,10 +2,13 @@
 
 use [electron](http://electron.atom.io/) to inspect websites and extract data, from JS or the CLI. useful for automation, testing, web scraping, etc
 
+**BETA DISCLAIMER** early adopters only, this module is still *hecka fresh*
+
 ```
 npm link
+npm run bundle
 npm i electron-prebuilt -g
-electron-microscope http://hoytarboretum.gardenexplorer.org/taxalist.aspx script.js 2>/dev/null
+electron-microscope http://hoytarboretum.gardenexplorer.org/taxalist.aspx --eval="document.querySelector('h1 a').innerText" 2>/dev/null
 ```
 
 ## usage
