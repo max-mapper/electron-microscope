@@ -24,7 +24,7 @@ function Microscope (opts, ready) {
       "web-security": true
     },
     "node-integration": false,
-    show: true
+    show: opts.show
   })
 
   this.opts = opts || {}
@@ -37,7 +37,7 @@ function Microscope (opts, ready) {
   })
 }
 
-Microscope.prototype.load = function (url, opts, cb) {
+Microscope.prototype.loadDom = function (url, opts, cb) {
   var self = this
   if (typeof opts === 'function') {
     cb = opts
@@ -84,7 +84,7 @@ Microscope.prototype.domReady = function (cb) {
   })
 }
 
-Microscope.prototype.eval = function (script) {
+Microscope.prototype.createEvalStream = function (script) {
   var self = this
   
   if (typeof script === 'function') script = script.toString()

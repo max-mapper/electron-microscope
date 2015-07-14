@@ -15,12 +15,19 @@
     "duplexify": "^3.4.2",
     "getport": "^0.1.0",
     "hat": "0.0.3",
+    "minimist": "^1.1.1",
     "ndjson": "^1.4.1",
     "pump": "^1.0.0",
     "through2": "^2.0.0",
     "websocket-stream": "^1.5.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "electron-prebuilt": "^0.29.2",
+    "http-server": "^0.8.0",
+    "npm-execspawn": "^1.2.0",
+    "tape": "^4.0.0",
+    "tape-spawn": "^1.4.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/maxogden/electron-microscope.git"

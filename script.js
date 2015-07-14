@@ -1,4 +1,4 @@
 function scraper (stream) {
-  stream.write(document.querySelector('.content-title').innerText)
+  stream.write(document.querySelector('.jumbotron-title').innerText)
   stream.end()
 }
