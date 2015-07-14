@@ -30,7 +30,7 @@ function load () {
     if (err) throw err
 
     // loads the url and waits for the dom-ready event
-    scope.loadDom(url, function (err, resp) {
+    scope.loadUrl(url, function (err, resp) {
       if (err) throw err
       var data = scope.createEvalStream(script)
       

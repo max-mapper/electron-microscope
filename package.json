@@ -38,5 +38,5 @@
     "url": "https://github.com/maxogden/electron-microscope/issues"
   },
   "homepage": "https://github.com/maxogden/electron-microscope#readme",
-  "description": ""
+  "description": "use electron to inspect websites and extract data, from JS or the CLI. useful for automation, testing, web scraping, etc"
 }

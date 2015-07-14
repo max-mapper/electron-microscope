@@ -37,7 +37,7 @@ function Microscope (opts, ready) {
   })
 }
 
-Microscope.prototype.loadDom = function (url, opts, cb) {
+Microscope.prototype.loadUrl = function (url, opts, cb) {
   var self = this
   if (typeof opts === 'function') {
     cb = opts
@@ -89,13 +89,11 @@ Microscope.prototype.createEvalStream = function (script) {
   
   if (typeof script === 'function') script = script.toString()
 
-  // current method (suggest a better one plz):
+  // algorithm:
   // - each window gets a unique id
   // - we embed id in script, run script on page
   // - script tells us its ready
-  // - we send the http response data (first arg to user fn)
-  // - we print <id>-message data to stdout
-  // - when user calls done() we can close the window
+  // - we send back the users script for the page to eval
   
   var id = uuid()
   var limit = this.opts.limit

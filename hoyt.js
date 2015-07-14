@@ -5,14 +5,14 @@ App.on('ready', load)
 
 function load () {
   var scope = microscope({}, function ready (err) {
-    scope.load('http://hoytarboretum.gardenexplorer.org/taxalist.aspx')
+    scope.loadUrl('http://hoytarboretum.gardenexplorer.org/taxalist.aspx')
     loop()
   })  
   
   function loop () {
     scope.domReady(function (err) {
       if (err) return exit(err)
-      var data = scope.eval(clickNextLetter)
+      var data = scope.createEvalStream(clickNextLetter)
       data.on('data', function (d) {
         console.log(JSON.stringify(d.data))
       })
@@ -23,7 +23,7 @@ function load () {
       data.on('finish', function () {
         scope.domReady(function (err) {
           if (err) return exit(err)
-          var data = scope.eval(getSpecies)
+          var data = scope.createEvalStream(getSpecies)
           data.on('data', function (d) {
             console.log(d)
           })
