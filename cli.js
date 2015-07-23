@@ -23,6 +23,8 @@ var App = require('app')
 var microscope = require('./index.js')
 var ndjson = require('ndjson')
 
+App.commandLine.appendSwitch('ignore-certificate-errors', true)
+
 App.on('ready', load)
 
 function load () {

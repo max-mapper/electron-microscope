@@ -59,6 +59,7 @@ module.exports = function (opts, cb) {
       emitter.httpPort = p
       emitter.httpServer.listen(p, function (err) {
         if (err) return cb(err)
+        debug('listening on ' + p)
         cb(null, emitter)
       })
     })
