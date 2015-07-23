@@ -17,6 +17,7 @@
     "hat": "0.0.3",
     "minimist": "^1.1.1",
     "ndjson": "^1.4.1",
+    "pem": "^1.7.2",
     "pump": "^1.0.0",
     "through2": "^2.0.0",
     "websocket-stream": "^1.5.0",

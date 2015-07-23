@@ -21,20 +21,21 @@ function Microscope (opts, ready) {
   var self = this
 
   if (typeof opts.insecure === 'undefined') opts.insecure = false
-    
+
   var winOpts = extend({
     "web-preferences": {
       "web-security": !opts.insecure
     },
     "node-integration": false
   }, opts)
-  
+
   this.window = new BrowserWindow(winOpts)
 
   this.opts = opts || {}
+  this.opts.https = this.opts.https || true
   this.opts.limit = this.opts.limit || 100000
-  
-  createBridge(function (err, bridge) {
+
+  createBridge(this.opts, function (err, bridge) {
     if (err) return ready(err)
     self.bridge = bridge
     ready()
@@ -55,13 +56,13 @@ Microscope.prototype.domReady = function (cb) {
   var self = this
   var limit = this.opts.limit
   var finished = false
-  
+
   var limitInterval = setTimeout(function () {
     if (finished) return
     finished = true
     cb(new Error('Timed out'))
   }, limit)
-    
+
   var responseDetails
   self.window.webContents.once('did-get-response-details', function (event, status, newUrl, originalUrl, respCode, method, referrer, headers) {
     responseDetails = {
@@ -74,13 +75,13 @@ Microscope.prototype.domReady = function (cb) {
       headers: headers
     }
   })
-  
+
   self.window.webContents.once('dom-ready', function (ev) {
     clearInterval(limitInterval)
-    
+
     cb(null, responseDetails)
   })
-  
+
   self.window.webContents.once('did-fail-load', function (ev, code, desc) {
     if (finished) return
     finished = true
@@ -90,7 +91,7 @@ Microscope.prototype.domReady = function (cb) {
 
 Microscope.prototype.createEvalStream = function (script) {
   var self = this
-  
+
   if (typeof script === 'function') script = script.toString()
 
   // algorithm:
@@ -98,19 +99,19 @@ Microscope.prototype.createEvalStream = function (script) {
   // - we embed id in script, run script on page
   // - script tells us its ready
   // - we send back the users script for the page to eval
-  
+
   var id = uuid()
   var limit = this.opts.limit
   var gotReady = false
   var timedOut = false
   var stream = through.obj()
-  
+
   var limitInterval = setTimeout(function () {
     if (gotReady) return
     timedOut = true
     stream.destroy(new Error('Timed out'))
   }, limit)
-  
+
   // when our rpc code has executed it will call this
   self.bridge.on(id + '-ready', function () {
     if (timedOut) return
@@ -122,7 +123,7 @@ Microscope.prototype.createEvalStream = function (script) {
     if (timedOut) return
     stream.push(data)
   })
-  
+
   self.bridge.on(id + '-error', function (err) {
     if (timedOut) return
     stream.destroy(err)
@@ -136,10 +137,10 @@ Microscope.prototype.createEvalStream = function (script) {
 
   // run our rpc code on page
   var clientScript = clientBundle
-    .replace('[[REPLACE-WITH-SERVER]]', 'ws://localhost:' + self.bridge.httpPort)
+    .replace('[[REPLACE-WITH-SERVER]]', 'wss://localhost:' + self.bridge.httpPort)
     .replace('[[REPLACE-WITH-ID]]', id)
-  
+
   self.window.webContents.executeJavaScript(clientScript)
-    
+
   return stream
 }
