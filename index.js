@@ -4,6 +4,7 @@ var events = require('events')
 var uuid = require('hat')
 var through = require('through2')
 var BrowserWindow = require('browser-window')
+var extend = require('xtend')
 var debug = require('debug')('electron-microscope')
 var createBridge = require('./bridge.js')
 
@@ -19,13 +20,16 @@ function Microscope (opts, ready) {
   }
   var self = this
 
-  this.window = new BrowserWindow({
+  if (typeof opts.insecure === 'undefined') opts.insecure = false
+    
+  var winOpts = extend({
     "web-preferences": {
-      "web-security": true
+      "web-security": !opts.insecure
     },
-    "node-integration": false,
-    show: opts.show
-  })
+    "node-integration": false
+  }, opts)
+  
+  this.window = new BrowserWindow(winOpts)
 
   this.opts = opts || {}
   this.opts.limit = this.opts.limit || 100000
