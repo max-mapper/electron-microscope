@@ -4,11 +4,11 @@ var microscope = require('./index.js')
 App.on('ready', load)
 
 function load () {
-  var scope = microscope({}, function ready (err) {
+  var scope = microscope({https: false}, function ready (err) {
     scope.loadUrl('http://hoytarboretum.gardenexplorer.org/taxalist.aspx')
     loop()
-  })  
-  
+  })
+
   function loop () {
     scope.domReady(function (err) {
       if (err) return exit(err)

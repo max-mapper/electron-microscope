@@ -21,6 +21,7 @@ function Microscope (opts, ready) {
   var self = this
 
   if (typeof opts.insecure === 'undefined') opts.insecure = false
+  if (typeof opts.https === 'undefined') opts.https = true
 
   var winOpts = extend({
     "web-preferences": {
@@ -32,7 +33,6 @@ function Microscope (opts, ready) {
   this.window = new BrowserWindow(winOpts)
 
   this.opts = opts || {}
-  this.opts.https = this.opts.https || true
   this.opts.limit = this.opts.limit || 100000
 
   createBridge(this.opts, function (err, bridge) {
@@ -135,9 +135,11 @@ Microscope.prototype.createEvalStream = function (script) {
     stream.end()
   })
 
+  var prefix = this.opts.https ? 'wss' : 'ws'
+
   // run our rpc code on page
   var clientScript = clientBundle
-    .replace('[[REPLACE-WITH-SERVER]]', 'wss://localhost:' + self.bridge.httpPort)
+    .replace('[[REPLACE-WITH-SERVER]]', prefix + '://localhost:' + self.bridge.httpPort)
     .replace('[[REPLACE-WITH-ID]]', id)
 
   self.window.webContents.executeJavaScript(clientScript)

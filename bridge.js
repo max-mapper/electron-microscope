@@ -11,15 +11,15 @@ var debug = require('debug')('electron-microscope/bridge')
 var debugStream = require('debug-stream')('electron-microscope/bridge')
 
 module.exports = function (opts, cb) {
-  if (!cb) {
-    opts = {}
+  if (typeof opts === 'function') {
     cb = opts
+    opts = {}
   }
 
-  if (opts.insecure) return createSocket(http.createServer()) // no handler, just exists for websocket server{
-
-  pem.createCertificate({days: 999, selfSigned: true}, function (err, keys) {
+  if (!opts.https) createSocket(http.createServer()) // no handler, just exists for websocket server{
+  else pem.createCertificate({days: 999, selfSigned: true}, function (err, keys) {
     if (err) return cb(err)
+    debug('creating server')
     createSocket(https.createServer({key: keys.serviceKey, cert: keys.certificate}))
   })
 

@@ -3,8 +3,8 @@
 var fs = require('fs')
 var minimist = require('minimist')
 var args = minimist(process.argv.slice(2), {
-  boolean: ['show', 'insecure'],
-  default: { show: false, insecure: false }
+  boolean: ['show', 'insecure', 'https'],
+  default: { show: false, insecure: false, https: true }
 })
 
 var url = args._[0]
