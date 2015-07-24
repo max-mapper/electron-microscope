@@ -35,15 +35,15 @@ function load () {
     scope.loadUrl(url, function (err, resp) {
       if (err) throw err
       var data = scope.createEvalStream(script)
-      
+
       // print data to console as ndjson
       data.pipe(ndjson.serialize()).pipe(process.stdout)
-      
+
       // close window when done (exits process)
       data.on('finish', function () {
         scope.window.close()
       })
-      
+
       // handle errors from script
       data.on('error', function (e) {
         console.error('Error!', e)

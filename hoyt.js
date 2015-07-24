@@ -35,14 +35,14 @@ function load () {
       })
     })
   }
-  
+
   // these two functions are executed on the page, .toString() is called on them!
   function getSpecies (stream) {
     var species = document.querySelectorAll('.taxalist a b')
     for (var i = 0; i < species.length; i++) stream.write(species[i].innerText)
     stream.end()
   }
-  
+
   function clickNextLetter(stream) {
     var links = document.querySelectorAll('.content input[type="button"]')
     var lastClicked = localStorage.getItem('last-clicked')
@@ -54,7 +54,7 @@ function load () {
     link.click()
     stream.end()
   }
-  
+
   function exit (err) {
     console.error(err)
     // scope.window.close()
