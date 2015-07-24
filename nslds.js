@@ -1,7 +1,6 @@
 var fs = require('fs')
 var App = require('app')
 var microscope = require('./index.js')
-var cookiesScript = fs.readFileSync('./cookiesScript.js').toString()
 
 App.on('ready', load)
 
@@ -10,7 +9,6 @@ App.commandLine.appendSwitch('ignore-certificate-errors', true)
 function load () {
   var scope = microscope({insecure: false, https: true}, function ready (err) {
     scope.window.loadUrl('https://www.nslds.ed.gov/npas/index.htm')
-    scope.window.webContents.executeJavaScript(cookiesScript)
     letsgo()
   })
 
