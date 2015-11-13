@@ -7,7 +7,8 @@
   },
   "scripts": {
     "bundle": "browserify socket-client.js -o socket-client-bundle.js",
-    "rmcache": "rm ~/Library/Application\\ Support/Electron/Local\\ Storage/*"
+    "rmcache": "rm ~/Library/Application\\ Support/Electron/Local\\ Storage/*",
+    "test": "node test/test.js"
   },
   "dependencies": {
     "debug": "^2.2.0",
@@ -24,7 +25,7 @@
     "xtend": "^4.0.0"
   },
   "devDependencies": {
-    "electron-prebuilt": "^0.29.2",
+    "electron-prebuilt": "^0.34.2",
     "http-server": "^0.8.0",
     "npm-execspawn": "^1.2.0",
     "tape": "^4.0.0",

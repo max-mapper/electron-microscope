@@ -22,18 +22,20 @@ function Microscope (opts, ready) {
 
   if (typeof opts.insecure === 'undefined') opts.insecure = false
   if (typeof opts.https === 'undefined') opts.https = true
-
   var winOpts = extend({
-    "web-preferences": {
-      "web-security": !opts.insecure
+    "webPreferences": {
+      "webSecurity": !opts.insecure,
+      "allowRunningInsecureContent": true,
+      "allowDisplayingInsecureContent": true
+      // "preload": path.resolve(__dirname, 'preload.js') // preload is currently unusable for us (electron/issues/1117)
     },
-    "node-integration": false
+    "nodeIntegration": true // WARNING this is a security issue. refer to maxogden/electron-microscope/issues/4
   }, opts)
 
   this.window = new BrowserWindow(winOpts)
-
+  
   this.opts = opts || {}
-  this.opts.limit = this.opts.limit || 100000
+  this.opts.limit = this.opts.limit || 10000
 
   createBridge(this.opts, function (err, bridge) {
     if (err) return ready(err)
@@ -49,10 +51,11 @@ Microscope.prototype.loadUrl = function (url, opts, cb) {
     opts = undefined
   }
   this.window.loadUrl(url, opts)
-  if (cb) this.domReady(cb)
+  this.window.webContents.executeJavaScript("require('web-frame').registerUrlSchemeAsPrivileged('ws')")
+  if (cb) this.onload(cb)
 }
 
-Microscope.prototype.domReady = function (cb) {
+Microscope.prototype.onload = function (cb) {
   var self = this
   var limit = this.opts.limit
   var finished = false
@@ -65,6 +68,7 @@ Microscope.prototype.domReady = function (cb) {
 
   var responseDetails
   self.window.webContents.once('did-get-response-details', function (event, status, newUrl, originalUrl, respCode, method, referrer, headers) {
+    debug('got response details')
     responseDetails = {
       status: status,
       url: newUrl,
@@ -75,14 +79,16 @@ Microscope.prototype.domReady = function (cb) {
       headers: headers
     }
   })
-
-  self.window.webContents.once('dom-ready', function (ev) {
-    clearInterval(limitInterval)
-
+  
+  self.window.webContents.once('did-finish-load', function (ev) {
+    debug('did-finish-load')
+    clearTimeout(limitInterval)
+    finished = true
     cb(null, responseDetails)
   })
 
   self.window.webContents.once('did-fail-load', function (ev, code, desc) {
+    debug('did-fail-load')
     if (finished) return
     finished = true
     cb(new Error(desc))
@@ -114,6 +120,7 @@ Microscope.prototype.createEvalStream = function (script) {
 
   // when our rpc code has executed it will call this
   self.bridge.on(id + '-ready', function () {
+    debug('bridge ready')
     if (timedOut) return
     gotReady = true
     self.bridge.activeSocket.write({id: id, script: script})

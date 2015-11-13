@@ -10,7 +10,7 @@ function load () {
   })
 
   function loop () {
-    scope.domReady(function (err) {
+    scope.onload(function (err) {
       if (err) return exit(err)
       var data = scope.createEvalStream(clickNextLetter)
       data.on('data', function (d) {
@@ -21,7 +21,7 @@ function load () {
         scope.window.close()
       })
       data.on('finish', function () {
-        scope.domReady(function (err) {
+        scope.onload(function (err) {
           if (err) return exit(err)
           var data = scope.createEvalStream(getSpecies)
           data.on('data', function (d) {

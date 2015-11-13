@@ -15,11 +15,10 @@ module.exports = function (opts, cb) {
     cb = opts
     opts = {}
   }
-
-  if (!opts.https) createSocket(http.createServer()) // no handler, just exists for websocket server{
+  debug('creating server', {https: opts.https})
+  if (!opts.https) createSocket(http.createServer()) // no handler, just exists for websocket server
   else pem.createCertificate({days: 999, selfSigned: true}, function (err, keys) {
     if (err) return cb(err)
-    debug('creating server')
     createSocket(https.createServer({key: keys.serviceKey, cert: keys.certificate}))
   })
 
@@ -29,10 +28,10 @@ module.exports = function (opts, cb) {
     emitter.websocketServer = websocket.createServer({server: emitter.httpServer}, handleSocket)
 
     function handleSocket (socket) {
+      debug('new socket')
       emitter.activeSocket = ndjson.serialize()
       pump(emitter.activeSocket, debugStream('to client: %s'), socket)
       var handlerStream = through.obj(function(data, enc, next) {
-        debug('thats it', data)
         if (!data.id) {
           console.error('invalid message ' + d)
           return next()
