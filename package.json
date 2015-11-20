@@ -6,11 +6,12 @@
     "electron-microscope": "cli.js"
   },
   "scripts": {
-    "bundle": "browserify socket-client.js -o socket-client-bundle.js",
+    "postinstall": "browserify socket-client.js -o socket-client-bundle.js",
     "rmcache": "rm ~/Library/Application\\ Support/Electron/Local\\ Storage/*",
     "test": "node test/test.js"
   },
   "dependencies": {
+    "browserify": "^12.0.1",
     "debug": "^2.2.0",
     "debug-stream": "^2.0.2",
     "duplexify": "^3.4.2",
