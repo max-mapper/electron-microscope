@@ -8,7 +8,7 @@ var extend = require('xtend')
 var debug = require('debug')('electron-microscope')
 var createBridge = require('./bridge.js')
 
-var clientBundle = fs.readFileSync('./socket-client-bundle.js').toString()
+var clientBundle = fs.readFileSync(path.join(__dirname, './socket-client-bundle.js')).toString()
 
 module.exports = Microscope
 
