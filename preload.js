@@ -1,1 +1,0 @@
-global.ELECTRON_IPC = require('ipc')

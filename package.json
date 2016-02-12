@@ -1,35 +1,10 @@
 {
   "name": "electron-microscope",
+  "description": "Use electron to inspect websites and extract data. useful for automation, testing, web scraping, etc",
   "version": "1.0.0",
   "main": "index.js",
-  "bin": {
-    "electron-microscope": "cli.js"
-  },
   "scripts": {
-    "bundle": "browserify socket-client.js -o socket-client-bundle.js",
-    "rmcache": "rm ~/Library/Application\\ Support/Electron/Local\\ Storage/*",
-    "test": "node test/test.js"
-  },
-  "dependencies": {
-    "debug": "^2.2.0",
-    "debug-stream": "^2.0.2",
-    "duplexify": "^3.4.2",
-    "getport": "^0.1.0",
-    "hat": "0.0.3",
-    "minimist": "^1.1.1",
-    "ndjson": "^1.4.1",
-    "pem": "^1.7.2",
-    "pump": "^1.0.0",
-    "through2": "^2.0.0",
-    "websocket-stream": "^1.5.0",
-    "xtend": "^4.0.0"
-  },
-  "devDependencies": {
-    "electron-prebuilt": "^0.34.2",
-    "http-server": "^0.8.0",
-    "npm-execspawn": "^1.2.0",
-    "tape": "^4.0.0",
-    "tape-spawn": "^1.4.0"
+    "test": "standard && electron test/test.js"
   },
   "repository": {
     "type": "git",
@@ -41,5 +16,14 @@
     "url": "https://github.com/maxogden/electron-microscope/issues"
   },
   "homepage": "https://github.com/maxogden/electron-microscope#readme",
-  "description": "use electron to inspect websites and extract data, from JS or the CLI. useful for automation, testing, web scraping, etc"
+  "dependencies": {
+    "domify": "^1.4.0",
+    "through2": "^2.0.1"
+  },
+  "devDependencies": {
+    "concat-stream": "^1.5.1",
+    "electron-prebuilt": "^0.36.7",
+    "standard": "^6.0.4",
+    "tape": "^4.4.0"
+  }
 }
