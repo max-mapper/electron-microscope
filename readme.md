@@ -2,7 +2,7 @@
 
 Use [electron](http://electron.atom.io/) to load websites and extract data. Intended for automation, testing, web scraping, etc.
 
-Loads URLs inside an electron [webview tag](https://github.com/atom/electron/blob/master/docs/api/web-view-tag.md), allows you to execute code on them, and stream data from the pages back to your main process.
+Loads URLs inside an electron [webview tag](https://github.com/atom/electron/blob/master/docs/api/web-view-tag.md), allows you to execute code on them and stream data from the pages back to your main process.
 
 Run this headlessly on Linux using `xvfb-run`.
 
@@ -36,6 +36,16 @@ $ electron my-code.js
 ### `require('electron-microscope')(options, ready)`
 
 Requiring the module returns a constructor function that you use to create a new instance. Pass it an `options` object and a `ready` callback that will be called with `(error, scope)`. `scope` is your new instance all ready to go.
+
+### scope.window
+
+The electon [BrowserWindow](https://github.com/atom/electron/blob/master/docs/api/browser-window.md) instance, AKA the renderer, which contains the `<webview>` that pages are loaded in.
+
+Currently because there are three node processes at play (main, renderer, webview), to access `webview` APIs you have to go through the `window`, e.g.:
+
+```js
+scope.window.webContents.executeJavascript("document.querySelector('webview').goBack()")
+```
 
 ### `scope.loadURL(url, cb)`
 
@@ -76,6 +86,7 @@ output.on('data', function (data) {
 
 output.on('error', function (error) {
   // will get called if your code throws an exception
+  // error will be an object with .message and .stack from the thrown error object
 })
 ```
 
@@ -84,6 +95,18 @@ output.on('error', function (error) {
 Emitted the page wants to start navigation. It can happen when the window.location object is changed or a link is clicked in the page.
 
 Calls `cb` with `(url)`, forwarded from [this event](https://github.com/atom/electron/blob/master/docs/api/web-view-tag.md#event-will-navigate).
+
+### scope.on('did-finish-load', cb)
+
+This event is like `did-finish-load`, but fired when the load failed or was cancelled.
+
+Calls `cb` with no arguments, forwarded from [this event](https://github.com/atom/electron/blob/master/docs/api/web-view-tag.md#event-did-finish-load).
+
+### scope.on('did-fail-load', cb)
+
+This event is like `did-finish-load`, but fired when the load failed or was cancelled.
+
+Calls `cb` with `(error)`, forwarded from [this event](https://github.com/atom/electron/blob/master/docs/api/web-view-tag.md#event-did-fail-load).
 
 ### scope.on('did-start-loading', cb)
 

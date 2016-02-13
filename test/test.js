@@ -59,7 +59,8 @@ test('invalid code causes stream error', function (t) {
       t.ok(false, 'should not get here')
     })
     pump(output, concatter, function (err) {
-      t.equal(err, 'donkeys is not defined', 'got error')
+      t.equal(err.message, 'donkeys is not defined', 'got error message')
+      t.ok(!!err.stack, 'error has .stack')
       t.end()
     })
   })
@@ -79,7 +80,7 @@ test('load a new page', function (t) {
     scope.on('will-navigate', function (newUrl) {
       t.equal(newUrl.url, 'http://localhost:54321/cool.html', 'navigating to cool.html')
     })
-    scope.on('did-stop-loading', function () {
+    scope.on('did-finish-load', function () {
       t.ok(true, 'stopped loading')
       var coolScraper = `function (send, done) {
         send(document.querySelector('.foo').innerText)

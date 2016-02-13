@@ -33,6 +33,7 @@ function Microscope (opts, ready) {
     ready(err)
   })
   electron.ipcMain.on('webview-event', function (event, channel, data) {
+    debug('webview-event', channel, data)
     self.emit(channel, data)
   })
 }
@@ -40,12 +41,12 @@ function Microscope (opts, ready) {
 inherits(Microscope, events.EventEmitter)
 
 Microscope.prototype.loadURL = function (url, cb) {
-  debug('start-loading loadURL', url)
+  debug('start loadURL', url)
   this.window.send('load-url', url)
   if (cb) {
-    electron.ipcMain.once('done-loading', function (event, err) {
-      debug('done-loading loadURL', url)
-      cb(err)
+    electron.ipcMain.once('webview-did-finish-load', function (event, error) {
+      debug('finish loadURL', url, error || '')
+      cb(error)
     })
   }
 }
@@ -59,7 +60,7 @@ Microscope.prototype.run = function (code) {
     outStream.push(data)
   })
   electron.ipcMain.once(id + '-done-running', function (event, err) {
-    if (err) outStream.destroy(err)
+    if (err) outStream.destroy(JSON.parse(err))
     else outStream.end()
   })
   return outStream
