@@ -19,12 +19,10 @@ module.exports = function () {
   })
 
   electron.ipcRenderer.on('run', function (event, id, code) {
-    console.log('running', id, code)
     var webview = document.querySelector('webview')
     webview.addEventListener('ipc-message', onIPC)
 
     function onIPC (event) {
-      console.log('IPC', event.channel, id, event.args)
       electron.ipcRenderer.send.apply(null, [id + '-' + event.channel].concat(event.args))
       if (event.channel === 'done-running') {
         webview.removeEventListener('ipc-message', onIPC)
@@ -36,5 +34,12 @@ module.exports = function () {
 }
 
 function ipcWrap (code) {
-  return ';(' + code + ')(ELECTRON_MICROSCOPE_SEND, ELECTRON_MICROSCOPE_DONE)'
+  return `;(function () {
+  try {
+    (${code})(ELECTRON_MICROSCOPE_SEND, ELECTRON_MICROSCOPE_DONE)
+  } catch (error) {
+    ELECTRON_MICROSCOPE_DONE(error.message)
+  }
+})();
+`
 }

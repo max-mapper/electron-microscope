@@ -4,6 +4,7 @@ var electron = require('electron')
 var through = require('through2')
 var events = require('events')
 var inherits = require('inherits')
+var debug = require('debug')('electron-microscope')
 var BrowserWindow = electron.BrowserWindow
 
 module.exports = Microscope
@@ -24,9 +25,13 @@ function Microscope (opts, ready) {
   })
   this.window.loadURL(path.join('file://', __dirname, 'window.html'))
   this.window.webContents.once('did-finish-load', function () {
+    debug('did-finish-load window.html')
     ready(null, self)
   })
-  this.window.webContents.once('did-fail-load', ready)
+  this.window.webContents.once('did-fail-load', function (err) {
+    debug('did-fail-load window.html', err)
+    ready(err)
+  })
   electron.ipcMain.on('webview-event', function (event, channel, data) {
     self.emit(channel, data)
   })
@@ -35,9 +40,11 @@ function Microscope (opts, ready) {
 inherits(Microscope, events.EventEmitter)
 
 Microscope.prototype.loadURL = function (url, cb) {
+  debug('start-loading loadURL', url)
   this.window.send('load-url', url)
   if (cb) {
     electron.ipcMain.once('done-loading', function (event, err) {
+      debug('done-loading loadURL', url)
       cb(err)
     })
   }

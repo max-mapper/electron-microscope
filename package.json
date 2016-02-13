@@ -29,6 +29,7 @@
   "devDependencies": {
     "concat-stream": "^1.5.1",
     "electron-prebuilt": "^0.36.7",
+    "pump": "^1.0.1",
     "standard": "^6.0.4",
     "tape": "^4.4.0"
   }

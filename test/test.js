@@ -1,5 +1,6 @@
 var test = require('tape')
 var concat = require('concat-stream')
+var pump = require('pump')
 var createMicroscope = require('../')
 var electron = require('electron')
 var execspawn = require('npm-execspawn')
@@ -45,6 +46,21 @@ test('retrieve the innerText of a div', function (t) {
         t.equal(out.toString(), 'bar', 'output matched')
         t.end()
       }))
+    })
+  })
+})
+
+test('invalid code causes stream error', function (t) {
+  scope.loadURL('http://localhost:54321/cool.html', function (err) {
+    if (err) t.ifError(err)
+    var code = 'function () { donkeys() }'
+    var output = scope.run(code)
+    var concatter = concat(function (out) {
+      t.ok(false, 'should not get here')
+    })
+    pump(output, concatter, function (err) {
+      t.equal(err, 'donkeys is not defined', 'got error')
+      t.end()
     })
   })
 })
