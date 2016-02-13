@@ -1,7 +1,7 @@
 {
   "name": "electron-microscope",
   "description": "Use electron to inspect websites and extract data. useful for automation, testing, web scraping, etc",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "scripts": {
     "test": "standard && electron test/test.js"
