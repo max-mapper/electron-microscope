@@ -15,7 +15,7 @@ function Microscope (opts, ready) {
   this.window = new BrowserWindow({
     width: 800,
     height: 600,
-    show: true
+    show: false
   })
   this.window.loadURL(path.join('file://', __dirname, 'window.html'))
   this.window.webContents.once('did-finish-load', function () {
