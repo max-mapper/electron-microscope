@@ -1,16 +1,19 @@
 var test = require('tape')
 var concat = require('concat-stream')
-var microscope = require('../')
+var createMicroscope = require('../')
 var electron = require('electron')
 var execspawn = require('npm-execspawn')
 
 electron.app.commandLine.appendSwitch('disable-http-cache', true)
 
-var server
+var server, scope
 
 test('wait for electron', function (t) {
   electron.app.on('window-all-closed', function () {
-    // disable default
+    server.kill()
+    server.on('close', function () {
+      electron.app.quit()
+    })
   })
   electron.app.on('ready', function () {
     t.ok(true, 'electron ready')
@@ -27,29 +30,51 @@ test('start test server', function (t) {
   })
 })
 
-test('basic', function (t) {
-  var scope = microscope(function (err) {
+test('retrieve the innerText of a div', function (t) {
+  createMicroscope(function (err, newScope) {
+    scope = newScope
     if (err) t.ifError(err)
     scope.loadURL('http://localhost:54321', function (err) {
       if (err) t.ifError(err)
-      var output = scope.run(function (send, done) {
+      var scraper = `function (send, done) {
         send(document.querySelector('.foo').innerText)
         done()
-      })
+      }`
+      var output = scope.run(scraper)
       output.pipe(concat(function (out) {
         t.equal(out.toString(), 'bar', 'output matched')
-        scope.destroy()
         t.end()
       }))
     })
   })
 })
 
-test('stop server', function (t) {
-  server.kill()
-  server.on('close', function () {
-    t.ok(true, 'test server closed')
-    t.end()
-    electron.app.quit()
+test('load a new page', function (t) {
+  scope.loadURL('http://localhost:54321/cats.html', function (err) {
+    if (err) t.ifError(err)
+    var scraper = `function (send, done) {
+      document.querySelector('a.cool-button').click()
+      done()
+    }`
+    var output = scope.run(scraper)
+    output.pipe(concat(function (out) {
+      t.equal(out.toString(), '', 'no output')
+    }))
+    scope.on('will-navigate', function (newUrl) {
+      t.equal(newUrl.url, 'http://localhost:54321/cool.html', 'navigating to cool.html')
+    })
+    scope.on('did-stop-loading', function () {
+      t.ok(true, 'stopped loading')
+      var coolScraper = `function (send, done) {
+        send(document.querySelector('.foo').innerText)
+        done()
+      }`
+      var coolOutput = scope.run(coolScraper)
+      coolOutput.pipe(concat(function (out) {
+        t.equal(out.toString(), 'cool', 'got cool')
+        scope.destroy()
+        t.end()
+      }))
+    })
   })
 })
