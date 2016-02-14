@@ -45,7 +45,7 @@ function ipcWrap (code) {
   try {
     (${code})(ELECTRON_MICROSCOPE_SEND, ELECTRON_MICROSCOPE_DONE)
   } catch (err) {
-    ELECTRON_MICROSCOPE_DONE(JSON.stringify({message: err.message, stack: err.stack}))
+    ELECTRON_MICROSCOPE_DONE(err)
   }
 })();
 `

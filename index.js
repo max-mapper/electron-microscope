@@ -60,7 +60,7 @@ Microscope.prototype.run = function (code) {
     outStream.push(data)
   })
   electron.ipcMain.once(id + '-done-running', function (event, err) {
-    if (err) outStream.destroy(JSON.parse(err))
+    if (err) outStream.destroy(err)
     else outStream.end()
   })
   return outStream

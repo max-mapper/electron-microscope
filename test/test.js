@@ -67,6 +67,7 @@ test('invalid code causes stream error', function (t) {
 })
 
 test('load a new page', function (t) {
+  t.plan(4)
   scope.loadURL('http://localhost:54321/cats.html', function (err) {
     if (err) t.ifError(err)
     var scraper = `function (send, done) {
@@ -90,7 +91,6 @@ test('load a new page', function (t) {
       coolOutput.pipe(concat(function (out) {
         t.equal(out.toString(), 'cool', 'got cool')
         scope.destroy()
-        t.end()
       }))
     })
   })

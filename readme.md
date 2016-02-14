@@ -6,7 +6,7 @@ Loads URLs inside an electron [webview tag](https://github.com/atom/electron/blo
 
 Run this headlessly on Linux using `xvfb-run`.
 
-**BETA DISCLAIMER** early adopters only, this module is still *hecka fresh*
+Please note this is intended to be a fairly low level library that tries to not add much on top of what Electron is doing under the hood, so things that you might think are simple to do can turn out to be relatively complex due to the way web browser events end up working.
 
 ## usage
 
@@ -30,6 +30,10 @@ Run it with electron:
 $ npm install electron-prebuilt -g
 $ electron my-code.js
 ```
+
+## examples
+
+See the `examples/` folder
 
 ## API
 
