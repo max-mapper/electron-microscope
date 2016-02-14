@@ -33,7 +33,7 @@ $ electron my-code.js
 
 ## examples
 
-See the `examples/` folder
+See the `test/` and `examples/` folders
 
 ## API
 
