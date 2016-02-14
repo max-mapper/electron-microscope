@@ -48,7 +48,7 @@ The electon [BrowserWindow](https://github.com/atom/electron/blob/master/docs/ap
 Currently because there are three node processes at play (main, renderer, webview), to access `webview` APIs you have to go through the `window`, e.g.:
 
 ```js
-scope.window.webContents.executeJavascript("document.querySelector('webview').goBack()")
+scope.window.webContents.executeJavaScript("document.querySelector('webview').goBack()")
 ```
 
 ### `scope.loadURL(url, cb)`
