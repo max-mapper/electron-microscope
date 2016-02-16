@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/maxogden/electron-microscope#readme",
   "dependencies": {
+    "debug": "^2.2.0",
     "domify": "^1.4.0",
     "inherits": "^2.0.1",
     "through2": "^2.0.1"
