@@ -1,4 +1,5 @@
-window.ELECTRON_MICROSCOPE_IPC = require('ipc')
+const { ipcRenderer } = require('electron')
+window.ELECTRON_MICROSCOPE_IPC = ipcRenderer
 
 window.ELECTRON_MICROSCOPE_SEND = function send (obj) {
   window.ELECTRON_MICROSCOPE_IPC.sendToHost('send-data', obj)
